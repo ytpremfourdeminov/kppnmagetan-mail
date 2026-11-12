@@ -35,6 +35,13 @@ mail-worker-sub/wrangler.toml
 mail-worker-sub/.cf.env
 mail-worker-sub/.cf-home
 
+# One-off deploy helpers (assets upload flow)
+mail-worker/b64/
+mail-worker/bundle-out/
+mail-worker/bundle.b64
+mail-worker/manifest.json
+mail-worker/manifest.min.json
+
 git.md
 error.md
 # Local Worker secrets must never be committed.
