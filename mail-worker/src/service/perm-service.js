@@ -5,7 +5,7 @@ import rolePerm from '../entity/role-perm';
 import user from '../entity/user';
 import role from '../entity/role';
 import { permConst } from '../const/entity-const';
-import { t } from '../i18n/i18n'
+import { t, lngFromHeader } from '../i18n/i18n'
 import { ensureFeaturePermissions } from './feature-permission-service';
 
 export function orderPermissionGroups(groups) {
@@ -20,16 +20,17 @@ export function orderPermissionGroups(groups) {
 const permService = {
 	async tree(c) {
 		await ensureFeaturePermissions(c);
+		const lang = lngFromHeader(c.req?.header?.('accept-language'));
 		const pList = await orm(c).select().from(perm).where(eq(perm.pid, 0)).orderBy(asc(perm.sort)).all();
 		const cList = await orm(c).select().from(perm).where(ne(perm.pid, 0)).orderBy(asc(perm.sort)).all();
 
 		cList.forEach(cItem => {
-			cItem.name = t('perms.' + cItem.name)
+			cItem.name = t('perms.' + cItem.name, { lng: lang })
 		})
 
 		const ordered = orderPermissionGroups(pList);
 		ordered.forEach(pItem => {
-			pItem.name = t('perms.' + pItem.name)
+			pItem.name = t('perms.' + pItem.name, { lng: lang })
 			pItem.children = cList.filter(cItem => cItem.pid === pItem.permId)
 		})
 		return ordered;
