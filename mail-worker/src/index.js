@@ -26,7 +26,7 @@ export default {
 		 }
 
 		if (env.assets) return env.assets.fetch(req);
-		return new Response('Xi-Mail API is running. Frontend is deployed separately.', {
+		return new Response('kppnmagetan-mail API is running. Frontend is deployed separately.', {
 			status: 200, headers: { 'Content-Type': 'text/plain' }
 		});
 	},

@@ -41,7 +41,7 @@
         <span>{{ settingStore.settings.title }}</span>
       </div>
       <div class="envelope-postmark">
-        <span>XI MAIL</span>
+        <span>KPPNMAGETAN-MAIL</span>
         <b>{{ new Date().getFullYear() }}</b>
       </div>
       <div class="envelope-airmail"></div>
@@ -53,7 +53,7 @@
       <div class="passport-number">XM · {{ new Date().getFullYear() }} · 09</div>
       <div class="passport-stamp">
         <BrandMark :size="33" />
-        <span>XI MAIL</span>
+        <span>KPPNMAGETAN-MAIL</span>
       </div>
       <div class="passport-route">
         <i></i><span>{{ $t('passportRoute') }}</span><i></i>

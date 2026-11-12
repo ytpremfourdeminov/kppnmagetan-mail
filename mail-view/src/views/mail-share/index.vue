@@ -91,7 +91,7 @@ import { useServerStore } from '@/store/server.js';
 import BrandMark from '@/components/BrandMark.vue';
 import SharedMailReader from '@/components/SharedMailReader.vue';
 const { t } = useI18n();
-const siteName = computed(() => useSettingStore().settings.title || 'Xi-Mail');
+const siteName = computed(() => useSettingStore().settings.title || 'kppnmagetan-mail');
 const route = useRoute();
 const token = computed(() => route.hash.slice(1));
 const data = ref(null), failed = ref(false), retryable = ref(false), loading = ref(false);

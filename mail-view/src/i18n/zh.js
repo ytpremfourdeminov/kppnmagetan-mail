@@ -739,7 +739,7 @@ const zh = {
     searchAccount: '搜索邮箱',
     accountTotal: '个邮箱',
     setupTitle: '连接服务器',
-    setupDesc: '请输入 Xi-Mail Worker 的 API 地址以开始使用',
+    setupDesc: '请输入 kppnmagetan-mail Worker 的 API 地址以开始使用',
     serverName: '服务器名称',
     serverNamePlaceholder: '例如：我的邮箱',
     serverUrl: 'API 地址',
