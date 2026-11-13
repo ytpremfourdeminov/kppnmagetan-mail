@@ -49,6 +49,7 @@ async function registrationCopy(c,language) {
   const task=(async()=>{
     try{
       await rate.consume(c,'translation-public-hint',language.id+':'+hash,8,300);
+      provider.setEnv(c.env);
       const [translated]=await provider.translate([hint],language.serviceId);
       const copy={regKeyHintSource:hint,regKeyHint:translated};
       await c.env.kv.put(key,JSON.stringify(copy),{expirationTtl:60*60*24*30});
@@ -99,7 +100,8 @@ const translationService = {
     if (!pack?.messages) throw new BizError('该语言的界面译文尚未准备好。',404);
     return {language:id,messages:pack.messages,version:pack.version,publicCopy:await registrationCopy(c,language)};
   },
-  async generate(c,id) {
+  async generate(c,id,options={}) {
+    const force = typeof options === 'boolean' ? options : !!options?.force;
     const language=await catalogService.resolve(c,id);id=language.id;
     if (id==='zh') return {language:id,updatedAt:null};
     await rate.consume(c,'translation-generate',`${c.get('user')?.userId||''}:${id}`,8,300);
@@ -107,9 +109,10 @@ const translationService = {
     if (!pending) {pending=new Map();generating.set(key,pending);}
     if (pending.has(id)) return pending.get(id);
     const task=(async()=> {
-      const previous=await c.env.kv.get(PACK+id,{type:'json'});
+      const previous=force ? null : await c.env.kv.get(PACK+id,{type:'json'});
       const entries=sourceEntries.filter(([key,text])=>/[\u3400-\u9fff]/.test(text)&&previous?.sources?.[key]!==text);
       const protectedValues=entries.map(([,text])=>protect(text));
+      provider.setEnv(c.env);
       const translated=await provider.translate(protectedValues.map(value=>value.text),language.serviceId,'zh-Hans');
       const messages={...sources};
       for (const [key,text] of sourceEntries) if (previous?.sources?.[key]===text && typeof previous.messages?.[key]==='string') messages[key]=previous.messages[key];
@@ -132,6 +135,7 @@ const translationService = {
     const document=mailTranslationDocument(mail);
     if (!document.texts.length) return {emailId,target:language.id,...document.render([])};
     await rate.consume(c,'translation-mail',String(userId),12,60);
+    provider.setEnv(c.env);
     const translated=await provider.translate(document.texts,language.serviceId);
     return {emailId,target:language.id,...document.render(translated)};
   },

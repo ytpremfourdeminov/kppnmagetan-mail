@@ -6,7 +6,10 @@ import catalog from '../service/language-catalog-service';
 
 app.get('/translation/config',async c=>c.json(result.ok(await translation.management(c))));
 app.post('/translation/save',async c=>c.json(result.ok(await translation.save(c,await c.req.json()))));
-app.post('/translation/generate',async c=>c.json(result.ok(await translation.generate(c,(await c.req.json()).language))));
+app.post('/translation/generate',async c=>{
+  const body = await c.req.json();
+  return c.json(result.ok(await translation.generate(c, body.language, body)));
+});
 app.get('/translation/targets',async c=>c.json(result.ok((await translation.publicConfig(c)).languages)));
 app.post('/translation/catalog/refresh',async c=>c.json(result.ok(await catalog.refresh(c))));
 app.post('/translation/register',async c=>c.json(result.ok(await catalog.register(c,await c.req.json()))));

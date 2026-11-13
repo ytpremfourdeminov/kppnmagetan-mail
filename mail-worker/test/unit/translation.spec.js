@@ -197,23 +197,37 @@ describe('Complete and custom language catalog',()=>{
   });
 });
 
-describe('Edge translation channel',()=>{
-  it('uses a fixed endpoint, bounded text batches and manual redirects',async()=>{
-    remote.mockResolvedValue(Response.json([{translations:[{text:'Inbox'}]}]));
+describe('DeepL translation channel',()=>{
+  it('uses DeepL endpoint, Authorization header and JSON body',async()=>{
+    provider.setEnv({DEEPL_API_KEY:'test-key:fx'});
+    remote.mockResolvedValue(Response.json({translations:[{text:'Inbox'}]}));
     expect(await provider.translate(['source'],'en','zh-Hans')).toEqual(['Inbox']);
     const [url,options]=remote.mock.calls[0];
-    expect(url.origin).toBe('https://edge.microsoft.com');
-    expect(url.searchParams.get('to')).toBe('en');expect(options.redirect).toBe('manual');
-    expect(JSON.parse(options.body)).toEqual(['source']);
-    expect(options.headers.Authorization).toBeUndefined();
-    expect(options.headers['User-Agent']).toMatch(/Edg\/\d+\./);
+    expect(url).toBe('https://api-free.deepl.com/v2/translate');
+    expect(options.method).toBe('POST');
+    expect(options.headers['Authorization']).toBe('DeepL-Auth-Key test-key:fx');
+    expect(options.headers['Content-Type']).toBe('application/json');
+    expect(JSON.parse(options.body)).toEqual({
+      text: ['source'],
+      target_lang: 'EN-US',
+      source_lang: 'ZH',
+      context: 'Webmail application user interface: account login, log out of account, navigation, buttons, and settings.',
+    });
   });
-  it('omits the from parameter for automatic mail source detection',async()=>{
-    remote.mockResolvedValue(Response.json([{detectedLanguage:{language:'en'},translations:[{text:'Translated mail'}]}]));
+  it('omits source_lang for automatic detection and uses pro endpoint for non-fx keys',async()=>{
+    provider.setEnv({DEEPL_API_KEY:'pro-key-12345'});
+    remote.mockResolvedValue(Response.json({translations:[{text:'Translated mail'}]}));
     expect(await provider.translate(['Hello'],'zh-Hans')).toEqual(['Translated mail']);
-    expect(remote.mock.calls[0][0].searchParams.has('from')).toBe(false);
+    const [url,options]=remote.mock.calls[0];
+    expect(url).toBe('https://api.deepl.com/v2/translate');
+    expect(JSON.parse(options.body)).toEqual({text:['Hello'],target_lang:'ZH-HANS'});
   });
-  it.each([new Response('unavailable',{status:503}),Response.json([]),new Response('not json')])('does not use incomplete or failed output',async response=>{
+  it('throws BizError when DEEPL_API_KEY is not configured',async()=>{
+    provider.setEnv({});
+    await expect(provider.translate(['source'],'id')).rejects.toMatchObject({code:503});
+  });
+  it.each([new Response('unavailable',{status:503}),Response.json({}),Response.json({translations:[]}),new Response('not json')])('does not use incomplete or failed output',async response=>{
+    provider.setEnv({DEEPL_API_KEY:'test-key:fx'});
     remote.mockResolvedValue(response);
     await expect(provider.translate(['source'],'en')).rejects.toMatchObject({code:503});
   });

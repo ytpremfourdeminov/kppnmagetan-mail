@@ -54,6 +54,7 @@ export default {
     if(input.name&&!cleanName(input.name))throw new BizError('语言显示名称不正确。',400);
     await rate.consume(c,'translation-register',String(c.get('user')?.userId||''),12,300);
     // Confirm new codes against the actual translation channel using public text only.
+    provider.setEnv(c.env);
     try{await provider.translate(['语言'],code,'zh-Hans');}
     catch(error){if(error?.code===503)throw new BizError('翻译服务暂未接受这个语言代码，请检查代码或稍后重试。',400);throw error;}
     const region=code.split('-').find(part=>/^[A-Z]{2}$/.test(part))?.toLowerCase();
